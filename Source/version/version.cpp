@@ -27,7 +27,7 @@ TypeMode mode;
 tm *loctm;
 char path[256], modes[20];
 ofstream ver_file, ini_file; // поток для записи
-string source, header, def, sdtime;
+string source, header, def, d_version, r_version, sdtime;
 string delim = "--------------------------------------------------------------------------------------";
 //значения номера версии для DEBUG
 int d_major, d_minor, d_build;
@@ -71,12 +71,17 @@ int main( int argc, char *argv[] ) {
     loctm->tm_year += 1900; //years since 1900
     loctm->tm_mon++;        //months since January – [0, 11]
 
+    //вывод пути запуска
+    cout << "Start: " << argv[0] << endl;
+    
+    //чтение параметра сборки
     memset( modes, 0x00, sizeof( modes ) );
     memcpy( modes, argv[1], strlen( argv[1] ) );
     if ( strcmp( modes, "release" ) == 0 )
         mode = MODE_RELASE;
     else mode = MODE_DEBUG;
-    //
+    
+    //чтение параметра пути к INI файла
     memset( path, 0x00, sizeof( path ) );
     memcpy( path, argv[2], strlen( argv[2] ) );
     if ( path[strlen( path )-1] != '\\' )
@@ -84,6 +89,7 @@ int main( int argc, char *argv[] ) {
     strcat( path, "version.ini" );
     //разделитель
     cout << delim << endl;
+    
     //чтение параметров из INI файла
     cout << "Load file: " << path << endl;
     if ( ReadIni( path ) == false ) {
@@ -99,7 +105,7 @@ int main( int argc, char *argv[] ) {
         cout << "Major     = " << r_major << endl;
         cout << "Minor     = " << r_minor << endl;
         cout << "Build     = " << r_build << endl;
-        cout << "Version   = 'R'" << endl;
+        cout << "Version   = " << r_version << endl;
     }
     else {
         d_build++;
@@ -108,7 +114,7 @@ int main( int argc, char *argv[] ) {
         cout << "Major     = " << d_major << endl;
         cout << "Minor     = " << d_minor << endl;
         cout << "Build     = " << d_build << endl;
-        cout << "Version   = 'D'" << endl;
+        cout << "Version   = " << d_version << endl;
     }
     //сохраняем новые значения в INI файле
     if ( SaveIni( path ) == false ) {
@@ -160,8 +166,9 @@ bool ReadIni( string fname ) {
     //общие параметры
     source = reader.GetString( "main", "source", "" );  //куда формируем H файла
     header = reader.GetString( "main", "header", "" );  //имя H файла
-    def = reader.GetString( "main", "define", "" );     //имя параметра для define
+    def = reader.GetString("main", "define", "" );     //имя параметра для define
     //номер версии DEBUG
+    d_version = reader.GetString("debug", "version", "" );
     d_major = reader.GetInteger( "debug", "major", 0 );
     d_minor = reader.GetInteger( "debug", "minor", 0 );
     d_build = reader.GetInteger( "debug", "build", 1 );
@@ -174,6 +181,7 @@ bool ReadIni( string fname ) {
     d_mon = reader.GetInteger( "debug", "month", 0 );
     d_year = reader.GetInteger( "debug", "year", 0 );
     //номер версии RELEASE
+    r_version = reader.GetString("release", "version", "" );
     r_major = reader.GetInteger( "release", "major", 0 );
     r_minor = reader.GetInteger( "release", "minor", 0 );
     r_build = reader.GetInteger( "release", "build", 1 );
@@ -204,6 +212,7 @@ bool SaveIni( string fname ) {
     //для версии DEBUG
     ini_file << endl;
     ini_file << "[debug]" << endl;
+    ini_file << "version = " << d_version << endl;
     ini_file << "major   = " << d_major << endl;
     ini_file << "minor   = " << d_minor << endl;
     ini_file << "build   = " << d_build << endl << endl;
@@ -236,6 +245,7 @@ bool SaveIni( string fname ) {
     //для версии RELEASE
     ini_file << endl;
     ini_file << "[release]" << endl;
+    ini_file << "version = " << r_version << endl;
     ini_file << "major   = " << r_major << endl;
     ini_file << "minor   = " << r_minor << endl;
     ini_file << "build   = " << r_build << endl << endl;
@@ -283,7 +293,7 @@ bool CrtHeader( string hdr ) {
     ver_file << "    #define FW_VERSION_MAJOR   " << d_major << endl;
     ver_file << "    #define FW_VERSION_MINOR   " << d_minor << endl;
     ver_file << "    #define FW_VERSION_BUILD   " << d_build << endl;
-    ver_file << "    #define FW_VERSION_RC      'D'" << endl << endl;
+    ver_file << "    #define FW_VERSION_RC      " << "'" << d_version << "'" << endl << endl;
 
     ver_file << "    #define FW_TIME_HOUR       " << d_hour << endl;
     ver_file << "    #define FW_TIME_MINUTES    " << d_min << endl;
@@ -296,7 +306,7 @@ bool CrtHeader( string hdr ) {
     ver_file << "    #define FW_VERSION_MAJOR   " << r_major << endl;
     ver_file << "    #define FW_VERSION_MINOR   " << r_minor << endl;
     ver_file << "    #define FW_VERSION_BUILD   " << r_build << endl;
-    ver_file << "    #define FW_VERSION_RC      'R'" << endl << endl;
+    ver_file << "    #define FW_VERSION_RC      " << "'" << r_version << "'" << endl << endl;
 
     ver_file << "    #define FW_TIME_HOUR       " << r_hour << endl;
     ver_file << "    #define FW_TIME_MINUTES    " << r_min << endl;
