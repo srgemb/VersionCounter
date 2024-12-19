@@ -26,7 +26,7 @@ typedef enum {
 TypeMode mode;
 tm *loctm;
 char path[256], modes[20];
-ofstream ver_file, ini_file; // поток для записи
+ofstream ver_file, ini_file, log_file; // поток для записи
 string source, header, def, d_version, r_version, sdtime;
 string delim = "--------------------------------------------------------------------------------------";
 //значения номера версии для DEBUG
@@ -151,6 +151,39 @@ int main( int argc, char *argv[] ) {
         return 3;
     }
     cout << delim << endl;
+
+    //формирование LOG файла
+    memset( path, 0x00, sizeof( path ) );
+    memcpy( path, argv[2], strlen( argv[2] ) );
+    if ( path[strlen( path )-1] != '\\' )
+        strcat( path, "\\" );
+    strcat( path, "version.log" );
+    //открываем файл
+    log_file.open( path, ios::app );
+    if ( !log_file.is_open( ) )
+        return false;
+    //запись дата/время
+    log_file << setw( 2 ) << setfill( '0' ) << loctm->tm_mday << ".";
+    log_file << setw( 2 ) << setfill( '0' ) << loctm->tm_mon << ".";
+    log_file << setw( 4 ) << setfill( '0' ) << loctm->tm_year << " ";
+    log_file << setw( 2 ) << setfill( '0' ) << loctm->tm_hour << ":";
+    log_file << setw( 2 ) << setfill( '0' ) << loctm->tm_min << ":";
+    log_file << setw( 2 ) << setfill( '0' ) << loctm->tm_sec << " - ";
+    //запись в LOG файл номера версии
+    if ( mode == MODE_DEBUG ) {
+        log_file << d_major << ".";
+        log_file << d_minor << ".";
+        log_file << d_build << ".";
+        log_file << d_version << endl;
+    }
+    else {
+        log_file << r_major << ".";
+        log_file << r_minor << ".";
+        log_file << r_build << ".";
+        log_file << r_version << endl;
+    }
+    log_file.close( );
+
     return 0;
 }
 
@@ -168,7 +201,7 @@ bool ReadIni( string fname ) {
     header = reader.GetString( "main", "header", "" );  //имя H файла
     def = reader.GetString("main", "define", "" );     //имя параметра для define
     //номер версии DEBUG
-    d_version = reader.GetString("debug", "version", "" );
+    d_version = reader.GetString("debug", "version", "D" );
     d_major = reader.GetInteger( "debug", "major", 0 );
     d_minor = reader.GetInteger( "debug", "minor", 0 );
     d_build = reader.GetInteger( "debug", "build", 1 );
@@ -181,7 +214,7 @@ bool ReadIni( string fname ) {
     d_mon = reader.GetInteger( "debug", "month", 0 );
     d_year = reader.GetInteger( "debug", "year", 0 );
     //номер версии RELEASE
-    r_version = reader.GetString("release", "version", "" );
+    r_version = reader.GetString("release", "version", "R" );
     r_major = reader.GetInteger( "release", "major", 0 );
     r_minor = reader.GetInteger( "release", "minor", 0 );
     r_build = reader.GetInteger( "release", "build", 1 );
