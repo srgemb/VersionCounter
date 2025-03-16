@@ -28,8 +28,10 @@ typedef enum {
 tm *loctm;
 char path[256], modes[20];
 ofstream ver_file, ini_file, log_file; // поток для записи
-string source, header, def, d_version, p_version, r_version, sdtime;
+string source, header, def, d_version, p_version, r_version, t_version, sdtime;
 string delim = "--------------------------------------------------------------------------------------";
+//значения номера версии для TEST
+int t_major, t_minor, t_build;
 //значения номера версии для DEBUG
 int d_major, d_minor, d_build;
 //значения номера версии для PRERELEASE
@@ -42,6 +44,8 @@ int d_hour, d_min, d_sec, d_day, d_mon, d_year;
 int p_hour, p_min, p_sec, p_day, p_mon, p_year;
 //значения дата/время для версии RELEASE
 int r_hour, r_min, r_sec, r_day, r_mon, r_year;
+//значения дата/время для версии TEST
+int t_hour, t_min, t_sec, t_day, t_mon, t_year;
 
 //*************************************************************************************************
 // Прототипы локальных функций
@@ -58,7 +62,9 @@ int main( int argc, char *argv[] ) {
     if ( argc != 3 ) {
         cout << endl << endl;
         cout << "Usage: version.exe debug/pre_release/release full path to the version.ini file." << endl;
+        cout << "For example: version.exe test C:\\Project\\" << endl;
         cout << "For example: version.exe debug C:\\Project\\" << endl;
+        cout << "For example: version.exe pre_release C:\\Project\\" << endl;
         cout << "For example: version.exe release C:\\Project\\" << endl;
         cout << "Each time it starts, the value of the \"build\" parameter in the version.ini" << endl;
         cout << "file is increased by 1. The cycle is 0-255." << endl;
@@ -86,13 +92,10 @@ int main( int argc, char *argv[] ) {
     for ( int i = 0; i < strlen( modes ); i++ )
         modes[i] = toupper( modes[i] );
 
-    if ( strcmp( modes, "DEBUG" ) != 0 && strcmp( modes, "RELEASE" ) != 0 && strcmp( modes, "PRE_RELEASE" ) != 0 )
+    if ( strcmp( modes, "TEST" ) != 0 && strcmp( modes, "DEBUG" ) != 0 && strcmp( modes, "RELEASE" ) != 0 && strcmp( modes, "PRE_RELEASE" ) != 0 )
         return 0;
 
-    /*mode = MODE_RELASE;
-else mode = MODE_DEBUG;*/
-
-//чтение параметра пути к INI файла
+    //чтение параметра пути к INI файла
     memset( path, 0x00, sizeof( path ) );
     memcpy( path, argv[2], strlen( argv[2] ) );
     if ( path[strlen( path ) - 1] != '\\' )
@@ -109,53 +112,59 @@ else mode = MODE_DEBUG;*/
         return 1;
     }
     //изменяем значения
+    if ( strcmp( modes, "TEST" ) == 0 ) {
+        t_build++;
+        if (t_build > 255) {
+            t_build = 0;
+            t_minor++;
+        }
+        cout << "Major     = " << t_major << endl;
+        cout << "Minor     = " << t_minor << endl;
+        cout << "Build     = " << t_build << endl;
+        cout << "Version   = " << t_version << endl;
+    }
     if ( strcmp( modes, "DEBUG" ) == 0 ) {
         d_build++;
-        if ( d_build > 255 )
+        if ( d_build > 255 ) {
             d_build = 0;
+            d_minor++;
+         }
         cout << "Major     = " << d_major << endl;
         cout << "Minor     = " << d_minor << endl;
         cout << "Build     = " << d_build << endl;
         cout << "Version   = " << d_version << endl;
-        cout << "Date/time = ";
-        cout << setw( 2 ) << setfill( '0' ) << d_day << ".";
-        cout << setw( 2 ) << setfill( '0' ) << d_mon << ".";
-        cout << setw( 4 ) << setfill( '0' ) << d_year << "  ";
-        cout << setw( 2 ) << setfill( '0' ) << d_hour << ":";
-        cout << setw( 2 ) << setfill( '0' ) << d_min << ":";
-        cout << setw( 2 ) << setfill( '0' ) << d_sec << endl;
     }
     if ( strcmp( modes, "PRE_RELEASE" ) == 0 ) {
         p_build++;
-        if ( p_build > 255 )
+        if ( p_build > 255 ) {
             p_build = 0;
+            p_minor++;
+        }
         cout << "Major     = " << p_major << endl;
         cout << "Minor     = " << p_minor << endl;
         cout << "Build     = " << p_build << endl;
         cout << "Version   = " << p_version << endl;
-        cout << "Date/time = ";
-        cout << setw( 2 ) << setfill( '0' ) << p_day << ".";
-        cout << setw( 2 ) << setfill( '0' ) << p_mon << ".";
-        cout << setw( 4 ) << setfill( '0' ) << p_year << "  ";
-        cout << setw( 2 ) << setfill( '0' ) << p_hour << ":";
-        cout << setw( 2 ) << setfill( '0' ) << p_min << ":";
-        cout << setw( 2 ) << setfill( '0' ) << p_sec << endl;
     }
     if ( strcmp( modes, "RELEASE" ) == 0 ) {
         r_build++;
-        if ( r_build > 255 )
+        if ( r_build > 255 ) {
             r_build = 0;
+            r_minor++;
+        }
         cout << "Major     = " << r_major << endl;
         cout << "Minor     = " << r_minor << endl;
         cout << "Build     = " << r_build << endl;
         cout << "Version   = " << r_version << endl;
+    }
+    
+    if ( strcmp( modes, "TEST" ) == 0 || strcmp( modes, "DEBUG" ) == 0 || strcmp( modes, "PRE_RELEASE" ) == 0 || strcmp( modes, "RELEASE" ) == 0 ) {
         cout << "Date/time = ";
-        cout << setw( 2 ) << setfill( '0' ) << r_day << ".";
-        cout << setw( 2 ) << setfill( '0' ) << r_mon << ".";
-        cout << setw( 4 ) << setfill( '0' ) << r_year << "  ";
-        cout << setw( 2 ) << setfill( '0' ) << r_hour << ":";
-        cout << setw( 2 ) << setfill( '0' ) << r_min << ":";
-        cout << setw( 2 ) << setfill( '0' ) << r_sec << endl;
+        cout << setw( 2 ) << setfill( '0' ) << loctm->tm_mday << ".";
+        cout << setw( 2 ) << setfill( '0' ) << loctm->tm_mon << ".";
+        cout << setw( 4 ) << setfill( '0' ) << loctm->tm_year << "  ";
+        cout << setw( 2 ) << setfill( '0' ) << loctm->tm_hour << ":";
+        cout << setw( 2 ) << setfill( '0' ) << loctm->tm_min << ":";
+        cout << setw( 2 ) << setfill( '0' ) << loctm->tm_sec << endl;
     }
 
     //сохраняем новые значения в INI файле
@@ -194,6 +203,12 @@ else mode = MODE_DEBUG;*/
     log_file << setw( 2 ) << setfill( '0' ) << loctm->tm_sec << " - ";
 
     //запись в LOG файл номера версии
+    if ( strcmp( modes, "TEST" ) == 0 ) {
+        log_file << t_major << ".";
+        log_file << t_minor << ".";
+        log_file << t_build << ".";
+        log_file << t_version << endl;
+    }
     if ( strcmp( modes, "DEBUG" ) == 0 ) {
         log_file << d_major << ".";
         log_file << d_minor << ".";
@@ -230,6 +245,20 @@ bool ReadIni( string fname ) {
     source = reader.GetString( "main", "source", "" );  //куда формируем H файла
     header = reader.GetString( "main", "header", "" );  //имя H файла
     //def = reader.GetString("main", "define", "" );     //имя параметра для define
+
+    //номер версии TEST
+    t_version = reader.GetString("test", "version", "T" );
+    t_major = reader.GetInteger( "test", "major", 0 );
+    t_minor = reader.GetInteger( "test", "minor", 0 );
+    t_build = reader.GetInteger( "test", "build", 0 );
+    //время
+    t_hour = reader.GetInteger( "test", "hour", 0 );
+    t_min = reader.GetInteger( "test", "minutes", 0 );
+    t_sec = reader.GetInteger( "test", "seconds", 0 );
+    //дата
+    t_day = reader.GetInteger( "test", "day", 0 );
+    t_mon = reader.GetInteger( "test", "month", 0 );
+    t_year = reader.GetInteger( "test", "year", 0 );
 
     //номер версии DEBUG
     d_version = reader.GetString("debug", "version", "D" );
@@ -289,6 +318,31 @@ bool SaveIni( string fname ) {
     ini_file << "header = " << header << endl;
     //ini_file << "define = " << def << endl;
 
+    //для версии TEST
+    ini_file << endl;
+    ini_file << "[test]" << endl;
+    ini_file << "version = " << t_version << endl;
+    ini_file << "major   = " << t_major << endl;
+    ini_file << "minor   = " << t_minor << endl;
+    ini_file << "build   = " << t_build << endl << endl;
+    //время
+    if ( strcmp( modes, "TEST" ) == 0 ) {
+        //присваиваем новые значения дата/время
+        t_hour = loctm->tm_hour;
+        t_min = loctm->tm_min;
+        t_sec = loctm->tm_sec;
+        t_day = loctm->tm_mday;
+        t_mon = loctm->tm_mon;
+        t_year = loctm->tm_year;
+    }
+    //сохраним новые значения дата/время
+    ini_file << "hour    = " << t_hour << endl;
+    ini_file << "minutes = " << t_min << endl;
+    ini_file << "seconds = " << t_sec << endl << endl;
+    ini_file << "day     = " << t_day << endl;
+    ini_file << "month   = " << t_mon << endl;
+    ini_file << "year    = " << t_year << endl;
+
     //для версии DEBUG
     ini_file << endl;
     ini_file << "[debug]" << endl;
@@ -314,7 +368,7 @@ bool SaveIni( string fname ) {
     ini_file << "month   = " << d_mon << endl;
     ini_file << "year    = " << d_year << endl;
 
-    //для версии PRERELEASE
+    //для версии PRE_RELEASE
     ini_file << endl;
     ini_file << "[pre_release]" << endl;
     ini_file << "version = " << p_version << endl;
@@ -375,6 +429,21 @@ bool CrtHeader( string hdr ) {
     ver_file << "#ifndef __VERDATA_H" << endl;
     ver_file << "#define __VERDATA_H" << endl << endl;
 
+    //TEST
+    ver_file << "#ifdef " << "FW_TEST" << endl;
+    ver_file << "    #define FW_VERSION_MAJOR   " << t_major << endl;
+    ver_file << "    #define FW_VERSION_MINOR   " << t_minor << endl;
+    ver_file << "    #define FW_VERSION_BUILD   " << t_build << endl;
+    ver_file << "    #define FW_VERSION_RC      " << "'" << t_version << "'" << endl << endl;
+
+    ver_file << "    #define FW_TIME_HOUR       " << t_hour << endl;
+    ver_file << "    #define FW_TIME_MINUTES    " << t_min << endl;
+    ver_file << "    #define FW_TIME_SECONDS    " << t_sec << endl << endl;
+    ver_file << "    #define FW_DATE_DAY        " << t_day << endl;
+    ver_file << "    #define FW_DATE_MONTH      " << t_mon << endl;
+    ver_file << "    #define FW_DATE_YEAR       " << t_year << endl;
+    ver_file << "#endif" << endl << endl;
+    
     //DEBUG
     ver_file << "#ifdef " << "FW_DEBUG" << endl;
     ver_file << "    #define FW_VERSION_MAJOR   " << d_major << endl;
