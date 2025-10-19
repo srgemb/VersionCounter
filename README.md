@@ -3,12 +3,12 @@
 Утилита выполняет автоматический инкремент номера сборки версии ПО и обновление даты и времени сборки. Номер версии ведется в формате **X.Y.Z** (мажор.минор.сборка). 
 * **X** - Полностью обновленный код.
 * **Y** - При изменении, добавлении нового функционала.
-* **Z** - Увеличивается автоматически при сборке проекта (при исправлении ошибок). При каждом запуске утилиты выполняется инкремент значения, диапазон значений циклический: **0 - 255**. 
+* **Z** - При каждом запуске утилиты выполняется инкремент значения, диапазон значений циклический: **0 - 255**. При переходе значения 255 -> 0 выполняется инкремент значения **Y**.
 
-Для значений: "**X.Y**" автоматический инкремент не выполняется.
+Для значения: "**X**" автоматический инкремент не выполняется.
 
 Запуск утилиты выполняется с двумя параметрами:
-1. Тип сборки **debug** или **release**
+1. Тип сборки: **TEST**, **DEBUG**, **PRE_RELEASE**, **RELEASE**
 2. Путь к файлу **version.ini**
 
 Пример вызова: **version.exe debug c:\project** или **version.exe release c:\project**
@@ -32,37 +32,61 @@ Save header file: c:\project\verdata.h
 Пример файла **version.ini**
 
 ```ini
-[main]
-source = c:\project\
-header = verdata.h
-define = DEBUG_TARGET
+[test]
+version = T
+major   = 0
+minor   = 0
+build   = 23
+
+hour    = 16
+minutes = 15
+seconds = 7
+
+day     = 12
+month   = 6
+year    = 2025
 
 [debug]
+version = D
 major   = 1
+minor   = 5
+build   = 59
+
+hour    = 21
+minutes = 21
+seconds = 12
+
+day     = 18
+month   = 10
+year    = 2025
+
+[pre_release]
+version = P
+major   = 0
 minor   = 0
-build   = 206
+build   = 0
 
-hour    = 23
-minutes = 6
-seconds = 47
+hour    = 0
+minutes = 0
+seconds = 0
 
-day     = 15
-month   = 2
-year    = 2023
-
+day     = 0
+month   = 0
+year    = 0
 
 [release]
+version = R
 major   = 1
-minor   = 0
-build   = 40
+minor   = 1
+build   = 18
 
-hour    = 23
-minutes = 7
-seconds = 47
+hour    = 21
+minutes = 45
+seconds = 36
 
-day     = 15
-month   = 2
-year    = 2023
+day     = 28
+month   = 8
+year    = 2025
 ```
 
 Утилита формирует файл: **verdata.h** по пути указанному в параметре **source** файла: **version.ini** 
@@ -73,33 +97,66 @@ year    = 2023
 #ifndef __VERDATA_H
 #define __VERDATA_H
 
-#ifdef DEBUG_TARGET
-    #define FW_VERSION_MAJOR   1
+#ifdef FW_TEST
+    #define FW_VERSION_MAJOR   0
     #define FW_VERSION_MINOR   0
-    #define FW_VERSION_BUILD   192
+    #define FW_VERSION_BUILD   23
+    #define FW_VERSION_RC      'T'
+
+    #define FW_TIME_HOUR       16
+    #define FW_TIME_MINUTES    15
+    #define FW_TIME_SECONDS    7
+
+    #define FW_DATE_DAY        12
+    #define FW_DATE_MONTH      6
+    #define FW_DATE_YEAR       2025
+#endif
+
+#ifdef FW_DEBUG
+    #define FW_VERSION_MAJOR   1
+    #define FW_VERSION_MINOR   5
+    #define FW_VERSION_BUILD   59
     #define FW_VERSION_RC      'D'
 
-    #define FW_TIME_HOUR       14
-    #define FW_TIME_MINUTES    38
-    #define FW_TIME_SECONDS    44
+    #define FW_TIME_HOUR       21
+    #define FW_TIME_MINUTES    21
+    #define FW_TIME_SECONDS    12
 
-    #define FW_DATE_DAY        7
-    #define FW_DATE_MONTH      1
-    #define FW_DATE_YEAR       2023
-#else
-    #define FW_VERSION_MAJOR   1
+    #define FW_DATE_DAY        18
+    #define FW_DATE_MONTH      10
+    #define FW_DATE_YEAR       2025
+#endif
+
+#ifdef FW_PRE_RELEASE
+    #define FW_VERSION_MAJOR   0
     #define FW_VERSION_MINOR   0
-    #define FW_VERSION_BUILD   27
+    #define FW_VERSION_BUILD   0
+    #define FW_VERSION_RC      'P'
+
+    #define FW_TIME_HOUR       0
+    #define FW_TIME_MINUTES    0
+    #define FW_TIME_SECONDS    0
+
+    #define FW_DATE_DAY        0
+    #define FW_DATE_MONTH      0
+    #define FW_DATE_YEAR       0
+#endif
+
+#ifdef FW_RELEASE
+    #define FW_VERSION_MAJOR   1
+    #define FW_VERSION_MINOR   1
+    #define FW_VERSION_BUILD   18
     #define FW_VERSION_RC      'R'
 
-    #define FW_TIME_HOUR       14
-    #define FW_TIME_MINUTES    38
-    #define FW_TIME_SECONDS    50
+    #define FW_TIME_HOUR       21
+    #define FW_TIME_MINUTES    45
+    #define FW_TIME_SECONDS    36
 
-    #define FW_DATE_DAY        7
-    #define FW_DATE_MONTH      1
-    #define FW_DATE_YEAR       2023
+    #define FW_DATE_DAY        28
+    #define FW_DATE_MONTH      8
+    #define FW_DATE_YEAR       2025
 #endif
+
 #endif
 ```
 
